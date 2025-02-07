@@ -206,6 +206,14 @@ const TogetherAI: ModelProviderCard = {
       id: 'microsoft/WizardLM-2-8x22B',
     },
     {
+      contextWindowTokens: 32_768,
+      description:
+        'DeepSeek-R1 系列通过强化学习与冷启动数据优化推理性能，开源模型刷新多任务标杆，超越 OpenAI-o1-mini 水平。',
+      displayName: 'DeepSeek-R1',
+      enabled: true,
+      id: 'deepseek-ai/DeepSeek-R1',
+    },
+    {
       contextWindowTokens: 4096,
       description: 'DeepSeek LLM Chat (67B) 是创新的 AI 模型 提供深度语言理解和互动能力。',
       displayName: 'DeepSeek LLM Chat (67B)',
