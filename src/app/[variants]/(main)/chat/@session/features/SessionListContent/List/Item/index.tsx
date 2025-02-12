@@ -2,6 +2,7 @@ import { ModelTag } from '@lobehub/icons';
 import { memo, useMemo, useState } from 'react';
 import { Flexbox } from 'react-layout-kit';
 import { shallow } from 'zustand/shallow';
+import { Tag } from '@lobehub/ui';
 
 import { useAgentStore } from '@/store/agent';
 import { agentSelectors } from '@/store/agent/selectors';
@@ -27,7 +28,7 @@ const SessionItem = memo<SessionItemProps>(({ id }) => {
   const [active] = useSessionStore((s) => [s.activeId === id]);
   const [loading] = useChatStore((s) => [chatSelectors.isAIGenerating(s) && id === s.activeId]);
 
-  const [pin, title, description, avatar, avatarBackground, updateAt, model, group] =
+  const [pin, title, description, avatar, avatarBackground, updateAt, model, group, provider] =
     useSessionStore((s) => {
       const session = sessionSelectors.getSessionById(id)(s);
       const meta = session.meta;
@@ -41,6 +42,7 @@ const SessionItem = memo<SessionItemProps>(({ id }) => {
         session?.updatedAt,
         session.model,
         session?.group,
+        session.config.provider
       ];
     });
 
@@ -62,6 +64,9 @@ const SessionItem = memo<SessionItemProps>(({ id }) => {
     () =>
       !showModel ? undefined : (
         <Flexbox gap={4} horizontal style={{ flexWrap: 'wrap' }}>
+          <Tag>
+            {provider}
+          </Tag>
           <ModelTag model={model} />
         </Flexbox>
       ),
