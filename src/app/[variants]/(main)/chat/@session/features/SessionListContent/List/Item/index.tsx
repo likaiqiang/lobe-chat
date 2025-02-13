@@ -1,5 +1,5 @@
 import { ModelTag } from '@lobehub/icons';
-import { memo, useMemo, useState } from 'react';
+import {memo, useEffect, useMemo, useState} from 'react';
 import { Flexbox } from 'react-layout-kit';
 import { shallow } from 'zustand/shallow';
 import { Tag } from '@lobehub/ui';
@@ -15,6 +15,7 @@ import { sessionMetaSelectors, sessionSelectors } from '@/store/session/selector
 import ListItem from '../../ListItem';
 import CreateGroupModal from '../../Modals/CreateGroupModal';
 import Actions from './Actions';
+import {sessionService} from "@/services/session";
 
 interface SessionItemProps {
   id: string;
@@ -23,16 +24,16 @@ interface SessionItemProps {
 const SessionItem = memo<SessionItemProps>(({ id }) => {
   const [open, setOpen] = useState(false);
   const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
+  const [serverProvider, setServerProvider] = useState('')
   const [defaultModel] = useAgentStore((s) => [agentSelectors.inboxAgentModel(s)]);
 
   const [active] = useSessionStore((s) => [s.activeId === id]);
   const [loading] = useChatStore((s) => [chatSelectors.isAIGenerating(s) && id === s.activeId]);
 
-  const [pin, title, description, avatar, avatarBackground, updateAt, model, group, provider] =
+  const [pin, title, description, avatar, avatarBackground, updateAt, model, group, clientProvider] =
     useSessionStore((s) => {
       const session = sessionSelectors.getSessionById(id)(s);
       const meta = session.meta;
-
       return [
         sessionHelpers.getSessionPinned(session),
         sessionMetaSelectors.getTitle(meta),
@@ -42,11 +43,19 @@ const SessionItem = memo<SessionItemProps>(({ id }) => {
         session?.updatedAt,
         session.model,
         session?.group,
-        session.config.provider
+        session?.config?.provider || null
       ];
     });
 
   const showModel = model !== defaultModel;
+
+  useEffect(() => {
+    sessionService.getSessionConfig(id).then(cf=>{
+      setServerProvider(cf.provider as string)
+    })
+  }, []);
+
+  const provider = process.env.NEXT_PUBLIC_SERVICE_MODE === 'server' ? serverProvider : clientProvider
 
   const actions = useMemo(
     () => (
@@ -64,15 +73,14 @@ const SessionItem = memo<SessionItemProps>(({ id }) => {
     () =>
       !showModel ? undefined : (
         <Flexbox gap={4} horizontal style={{ flexWrap: 'wrap' }}>
-          <Tag>
-            {provider}
-          </Tag>
+          {
+            provider ? <Tag>{provider}</Tag> : null
+          }
           <ModelTag model={model} />
         </Flexbox>
       ),
-    [showModel, model],
+    [showModel, model, provider],
   );
-
   return (
     <>
       <ListItem
